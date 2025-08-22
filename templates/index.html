@@ -125,9 +125,10 @@
     </footer>
 
     <script>
-        // Canvas dimensions - these are typical for place-like canvases
-        const CANVAS_WIDTH = 2000;
-        const CANVAS_HEIGHT = 2000;
+        // More realistic canvas dimensions for place-like canvases
+        // These are adjusted based on typical collaborative canvas sizes
+        const CANVAS_WIDTH = 1000;
+        const CANVAS_HEIGHT = 1000;
         
         let currentX = 0;
         let currentY = 0;
@@ -151,21 +152,18 @@
             const coords = getRandomCoordinates();
             updateCoordinates(coords.x, coords.y);
             
-            // Try to navigate the iframe to specific coordinates
-            // Note: Due to CORS limitations, we might not be able to directly control the iframe
-            // but we can at least update our coordinate display and open a new window
-            const wplaceUrl = `https://wplace.live/#${coords.x},${coords.y}`;
+            // Instead of trying to navigate to specific coordinates (which doesn't work),
+            // we'll just refresh the iframe and show the coordinates
+            // The user can manually navigate to these coordinates on the canvas
+            document.getElementById('wplace-frame').src = 'https://wplace.live/';
             
-            // Update iframe src to attempt navigation
-            document.getElementById('wplace-frame').src = wplaceUrl;
+            console.log(`Generated random coordinates: (${coords.x}, ${coords.y})`);
             
-            console.log(`Teleporting to WPlace coordinates: (${coords.x}, ${coords.y})`);
-            
-            // Show notification
-            showNotification(`Teleported to (${coords.x}, ${coords.y})!`);
+            // Show notification with instructions
+            showNotification(`Random coordinates generated: (${coords.x}, ${coords.y}). Navigate manually on the canvas!`);
         }
         
-        // Show notification function
+        // Show notification function with longer duration for coordinate info
         function showNotification(message) {
             // Create notification element
             const notification = document.createElement('div');
@@ -181,29 +179,48 @@
                 font-weight: bold;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                 transition: opacity 0.3s;
+                max-width: 300px;
+                font-size: 14px;
             `;
             notification.textContent = message;
             document.body.appendChild(notification);
             
-            // Remove notification after 3 seconds
+            // Remove notification after 5 seconds (longer for coordinate info)
             setTimeout(() => {
                 notification.style.opacity = '0';
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
                 }, 300);
-            }, 3000);
+            }, 5000);
         }
         
-        // Random canvas area exploration
+        // Random canvas area exploration - opens in new tab
         function exploreRandomArea() {
             const coords = getRandomCoordinates();
             updateCoordinates(coords.x, coords.y);
             
-            // Open in new tab for better exploration
-            window.open(`https://wplace.live/#${coords.x},${coords.y}`, '_blank');
+            // Open wplace.live in new tab for exploration
+            window.open('https://wplace.live/', '_blank');
             
-            showNotification(`Opening area around (${coords.x}, ${coords.y}) in new tab!`);
+            showNotification(`Opening WPlace in new tab! Try navigating to coordinates (${coords.x}, ${coords.y})`);
         }
+        
+        // Copy coordinates to clipboard function
+        function copyCoordinates() {
+            const coordText = `${currentX},${currentY}`;
+            navigator.clipboard.writeText(coordText).then(() => {
+                showNotification(`Coordinates (${coordText}) copied to clipboard!`);
+            }).catch(() => {
+                showNotification(`Coordinates: (${coordText})`);
+            });
+        }
+        
+        // Add click handler to coordinates display for copying
+        document.getElementById('coordinates').addEventListener('click', copyCoordinates);
+        document.getElementById('coordinates').style.cursor = 'pointer';
+        document.getElementById('coordinates').title = 'Click to copy coordinates';
         
         // Event listeners
         document.getElementById("teleportBtn").addEventListener("click", teleportToRandom);
@@ -213,9 +230,9 @@
         const initialCoords = getRandomCoordinates();
         updateCoordinates(initialCoords.x, initialCoords.y);
         
-        // Try to load initial random location
+        // Load wplace.live in iframe
         setTimeout(() => {
-            document.getElementById('wplace-frame').src = `https://wplace.live/#${initialCoords.x},${initialCoords.y}`;
+            document.getElementById('wplace-frame').src = 'https://wplace.live/';
         }, 1000);
     </script>
 </body>

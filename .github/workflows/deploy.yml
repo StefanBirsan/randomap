@@ -54,5 +54,5 @@ jobs:
 
       - name: Tell App Runner to Deploy the New Image
         run: |
-          SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='${{ env.APP_RUNNER_SERVICE_NAME }}'].ServiceArn" --output text)
+          SERVICE_ARN=arn:aws:apprunner:us-east-1:020028129927:service/randomap-service-student-stefan/8342de2e114a45658a465acf00671a42
           aws apprunner update-service --service-arn $SERVICE_ARN --source-configuration '{ "ImageRepository": { "ImageIdentifier": "${{ steps.build-image.outputs.image }}", "ImageRepositoryType": "ECR" } }'

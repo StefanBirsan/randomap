@@ -15,7 +15,7 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Assert that the response data contains our app's title
-        self.assertIn(b'Random Earth Teleporter', response.data)
+        self.assertIn(b'Random WPlace Teleporter', response.data)
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Earth Teleporter 🌍 (Leaflet Edition)</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
+    <title>Random WPlace Teleporter � (Canvas Edition)</title>
     
     <style>
         body {
@@ -17,96 +13,210 @@
             align-items: center;
             margin: 0;
             height: 100vh;
-            background-color: #f0f2f5;
+            background-color: #1a1a1a;
+            color: #ffffff;
         }
         .header {
             text-align: center;
             padding: 20px;
             width: 100%;
-            background-color: #ffffff;
-            border-bottom: 1px solid #ddd;
+            background-color: #2d2d2d;
+            border-bottom: 1px solid #444;
         }
-        #teleportBtn {
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
             padding: 12px 24px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #fff;
-            background-color: #28a745;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        #teleportBtn {
+            background-color: #ff6b35;
         }
         #teleportBtn:hover {
-            background-color: #218838;
+            background-color: #e55a2b;
         }
-        #map {
-            height: 65%; /* Adjusted to make space for the footer */
+        #wplaceBtn {
+            background-color: #4a90e2;
+        }
+        #wplaceBtn:hover {
+            background-color: #357abd;
+        }
+        #randomBtn {
+            background-color: #7b68ee;
+        }
+        #randomBtn:hover {
+            background-color: #6a5acd;
+        }
+        #canvas-container {
+            position: relative;
+            height: 65%;
             width: 90%;
             max-width: 1200px;
             margin-top: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 2px solid #444;
+            overflow: hidden;
+        }
+        #wplace-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #000;
+        }
+        .coordinates {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 1000;
         }
         footer {
             margin-top: 20px;
-            color: #555;
+            color: #aaa;
             font-size: 14px;
+        }
+        .info-text {
+            margin-top: 10px;
+            color: #ccc;
+            font-size: 14px;
+            max-width: 600px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>The Final Deployment! It Works! 🚀</h1>
-        <button id="teleportBtn">Teleport!</button>
+        <h1>Random WPlace Teleporter 🎨</h1>
+        <p class="info-text">Explore the collaborative canvas at wplace.live! Jump to random coordinates or visit the main site.</p>
+        <div class="button-container">
+            <button id="teleportBtn" class="btn">Random Teleport!</button>
+            <a href="https://wplace.live/" target="_blank" id="wplaceBtn" class="btn">Visit WPlace.live</a>
+            <button id="randomBtn" class="btn">Random Canvas Area</button>
+        </div>
     </div>
     
-    <div id="map"></div>
+    <div id="canvas-container">
+        <div class="coordinates" id="coordinates">Coordinates: (0, 0)</div>
+        <iframe id="wplace-frame" src="https://wplace.live/" title="WPlace Canvas"></iframe>
+    </div>
 
     <footer>
-        <p>Created by: <strong>{{ author }}</strong></p>
+        <p>Created by: <strong>{{ author }}</strong> | Integrating with WPlace.live collaborative canvas</p>
     </footer>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
-    
     <script>
-        // 3. Initialize the map and marker variables
-        let map;
-        let marker;
-
-        // Set the initial location to Timișoara
-        const initialLocation = [45.7606, 21.2267];
-
-        // Initialize the map and set its view to our chosen geographical coordinates and a zoom level
-        map = L.map('map').setView(initialLocation, 13);
-
-        // Add a tile layer to add to our map. We are using OpenStreetMap.
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Add a marker to the map at the initial location
-        marker = L.marker(initialLocation).addTo(map)
-            .bindPopup('You are here... for now!')
-            .openPopup();
+        // Canvas dimensions - these are typical for place-like canvases
+        const CANVAS_WIDTH = 2000;
+        const CANVAS_HEIGHT = 2000;
         
-        // Add a click event listener to our button.
-        document.getElementById("teleportBtn").addEventListener("click", () => {
-            // Generate random latitude (-90 to +90) and longitude (-180 to +180).
-            const randomLat = Math.random() * 180 - 90;
-            const randomLng = Math.random() * 360 - 180;
-            const newLocation = [randomLat, randomLng];
+        let currentX = 0;
+        let currentY = 0;
+        
+        // Update coordinates display
+        function updateCoordinates(x, y) {
+            currentX = x;
+            currentY = y;
+            document.getElementById('coordinates').textContent = `Coordinates: (${x}, ${y})`;
+        }
+        
+        // Generate random coordinates within canvas bounds
+        function getRandomCoordinates() {
+            const x = Math.floor(Math.random() * CANVAS_WIDTH);
+            const y = Math.floor(Math.random() * CANVAS_HEIGHT);
+            return { x, y };
+        }
+        
+        // Teleport to random location
+        function teleportToRandom() {
+            const coords = getRandomCoordinates();
+            updateCoordinates(coords.x, coords.y);
             
-            console.log(`Teleporting to: ${newLocation[0]}, ${newLocation[1]}`);
-
-            // Update the map's view and the marker's position using Leaflet's methods.
-            map.setView(newLocation, 2); // Zoom out to see the new location
-            marker.setLatLng(newLocation);
-        });
+            // Try to navigate the iframe to specific coordinates
+            // Note: Due to CORS limitations, we might not be able to directly control the iframe
+            // but we can at least update our coordinate display and open a new window
+            const wplaceUrl = `https://wplace.live/#${coords.x},${coords.y}`;
+            
+            // Update iframe src to attempt navigation
+            document.getElementById('wplace-frame').src = wplaceUrl;
+            
+            console.log(`Teleporting to WPlace coordinates: (${coords.x}, ${coords.y})`);
+            
+            // Show notification
+            showNotification(`Teleported to (${coords.x}, ${coords.y})!`);
+        }
+        
+        // Show notification function
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: #4a90e2;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                z-index: 10000;
+                font-weight: bold;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                transition: opacity 0.3s;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Random canvas area exploration
+        function exploreRandomArea() {
+            const coords = getRandomCoordinates();
+            updateCoordinates(coords.x, coords.y);
+            
+            // Open in new tab for better exploration
+            window.open(`https://wplace.live/#${coords.x},${coords.y}`, '_blank');
+            
+            showNotification(`Opening area around (${coords.x}, ${coords.y}) in new tab!`);
+        }
+        
+        // Event listeners
+        document.getElementById("teleportBtn").addEventListener("click", teleportToRandom);
+        document.getElementById("randomBtn").addEventListener("click", exploreRandomArea);
+        
+        // Initialize with random coordinates
+        const initialCoords = getRandomCoordinates();
+        updateCoordinates(initialCoords.x, initialCoords.y);
+        
+        // Try to load initial random location
+        setTimeout(() => {
+            document.getElementById('wplace-frame').src = `https://wplace.live/#${initialCoords.x},${initialCoords.y}`;
+        }, 1000);
     </script>
 </body>
 </html>

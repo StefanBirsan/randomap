@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template
 from dotenv import load_dotenv
 
+
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -14,7 +15,7 @@ def home():
     """
     # Fetch the author name, providing a default if it's not set.
     author_name = os.environ.get("APP_AUTHOR", "Anonymous Developer")
-        
+         
     return render_template('index.html', author=author_name)
 
 if __name__ == '__main__':
